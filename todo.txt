@@ -1,0 +1,6 @@
+при сворачивании окна с приложением все очень портится, повторения считаются неверное
+
+
+beauty number input: https://stackblitz.com/edit/angular-ivy-plus-minus?file=src%2Fapp%2Fapp.component.css
+
+deploy it on server
