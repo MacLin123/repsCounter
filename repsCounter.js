@@ -282,7 +282,7 @@ class TemplateBuilder {
   class Speaker {
     static speak(text) {
         const utter = new SpeechSynthesisUtterance(text);
-        utter.rate = 6;
+        utter.rate = 5;
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utter);
     }
