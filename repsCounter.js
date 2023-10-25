@@ -117,7 +117,7 @@ class WorkoutPage {
 
 class PrepareWorkoutPage {
 
-    DEFAULT_PREPARE_TIME_MS = 3000;
+    DEFAULT_PREPARE_TIME_MS = 5000;
 
     init() {
         this.viewBuilder = new TemplateBuilder();
@@ -156,8 +156,7 @@ class RepsCounter {
     intervalId;
 
     stopwatch = new StopwatchView(globalStopwatch);
-    prepareElem = document.querySelector("#prepareElem");
-    repsElem = document.querySelector("#repsElem");
+    repsElem = document.querySelector("#reps");
 
     constructor(intervalMs) {
         this.intervalMs = intervalMs;
@@ -194,26 +193,27 @@ class RepsCounter {
 
 
 class Stopwatch {
-    timeInMs = 0
+    DEFAULT_TIME_MS = new Date().setHours(0, 0, 0 ,0);
+    timeInMs = this.DEFAULT_TIME_MS;
 
     getTimeInMs() {
         return this.timeInMs;
     }
 
     resetTimer() {
-        this.timeInMs = 0;
+        this.timeInMs = this.DEFAULT_TIME_MS;
     }
 
-    updateTimer() {
-        this.timeInMs += 10;   
+    addTime(timeInMs) {
+        this.timeInMs += timeInMs;   
     }
     
 }
 
 class StopwatchView {
-    appendTens = document.querySelector("#tens")
-    appendSeconds = document.querySelector("#seconds")
+    time = document.querySelector("#time")
     interval;
+    timeIntervalMs = 1000;
 
     constructor(stopwatch) {
         this.stopwatch = stopwatch
@@ -230,20 +230,33 @@ class StopwatchView {
     resetTimer() {
         clearInterval(this.interval);
         this.stopwatch.resetTimer();
-        this.appendTens.innerHTML = "00";
-        this.appendSeconds.innerHTML = "00";
+        this.updateView();
     }
 
     startTimer() {
-        clearInterval(this.interval);
-        this.interval = setInterval(this.updateTimer.bind(this), 10);
+        this.resetTimer();
+        this.interval = setInterval(this.updateTimer.bind(this), this.timeIntervalMs);
     }
 
     updateTimer() {
-        this.stopwatch.updateTimer();
-        const dateTime = new Date(this.stopwatch.getTimeInMs());
-        this.appendSeconds.innerHTML = dateTime.getSeconds();
-        this.appendTens.innerHTML = (dateTime.getMilliseconds() / 10).toFixed(0);
+        this.stopwatch.addTime(this.timeIntervalMs);
+        this.updateView();
+    }
+
+    updateView() {
+        this.time.innerHTML = this.getCurrentTimeView();
+    }
+
+    getCurrentTimeView() {
+        const currentDateTime = new Date(this.stopwatch.getTimeInMs());
+        const hours = this.transformTimeForView(currentDateTime.getHours());
+        const minutes = this.transformTimeForView(currentDateTime.getMinutes());
+        const seconds = this.transformTimeForView(currentDateTime.getSeconds());
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    transformTimeForView(number) {
+        return number < 10 ? `0${number}`: number;
     }
     
 }
@@ -282,7 +295,7 @@ class TemplateBuilder {
   class Speaker {
     static speak(text) {
         const utter = new SpeechSynthesisUtterance(text);
-        utter.rate = 5;
+        utter.rate = 4;
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utter);
     }
