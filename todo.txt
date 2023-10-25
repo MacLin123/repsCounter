@@ -6,3 +6,4 @@ beauty number input: https://stackblitz.com/edit/angular-ivy-plus-minus?file=src
 deploy it on server
 
 pause working wrong with timer, timer starts from 0
+на телефонн end workout не появляется

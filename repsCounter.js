@@ -131,7 +131,7 @@ class PrepareWorkoutPage {
     }
 
     displayPrepareTime() {
-        document.querySelector("#prepareTime").textContent = `/${this.DEFAULT_PREPARE_TIME_MS / 1000}:00`
+        document.querySelector("#prepareTime").textContent = `/00:00:${Utils.transformTimeForView(this.DEFAULT_PREPARE_TIME_MS / 1000)}`
     }
 }
 
@@ -249,14 +249,10 @@ class StopwatchView {
 
     getCurrentTimeView() {
         const currentDateTime = new Date(this.stopwatch.getTimeInMs());
-        const hours = this.transformTimeForView(currentDateTime.getHours());
-        const minutes = this.transformTimeForView(currentDateTime.getMinutes());
-        const seconds = this.transformTimeForView(currentDateTime.getSeconds());
+        const hours = Utils.transformTimeForView(currentDateTime.getHours());
+        const minutes = Utils.transformTimeForView(currentDateTime.getMinutes());
+        const seconds = Utils.transformTimeForView(currentDateTime.getSeconds());
         return `${hours}:${minutes}:${seconds}`;
-    }
-
-    transformTimeForView(number) {
-        return number < 10 ? `0${number}`: number;
     }
     
 }
@@ -298,6 +294,12 @@ class TemplateBuilder {
         utter.rate = 4;
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utter);
+    }
+}
+
+class Utils {
+    static transformTimeForView(number) {
+        return number < 10 ? `0${number}`: number;
     }
 }
   
