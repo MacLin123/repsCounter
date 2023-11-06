@@ -9,7 +9,7 @@ class MainApplication {
     }
 
     initWorkoutPage() {
-        this.workoutPage.init(this.mainPage.getIntervalMs());
+        this.workoutPage.init();
     }
 
     initPreWorkoutPage() {
@@ -18,36 +18,28 @@ class MainApplication {
 }
 
 class MainPage {
-    intervalElem;
     startBtn;
-
-    intervalMs = 5000;
 
     viewBuilder = new TemplateBuilder();
 
     init() {
         this.viewBuilder.displayMainPage();
         this.initElements();
+        this.initRanges();
         this.initEventListeners();
-        this.updateUI();
     }
 
     initEventListeners() {
         this.startBtn.addEventListener("click", () => mainApp.initPreWorkoutPage());
-        this.intervalElem.addEventListener("change", (event) => this.intervalMs = +this.intervalElem.value * 1000);
     }
 
     initElements() {
-        this.intervalElem = document.querySelector("#intevalId");
         this.startBtn = document.querySelector("#startBtn");
     }
 
-    getIntervalMs() {
-        return this.intervalMs;
-    }
-
-    updateUI() {
-        this.intervalElem.value = this.intervalMs / 1000;
+    initRanges() {
+        window.prepareRange = new PrepareTimeRange();
+        window.intervalRange = new IntervalRange();
     }
 }
 
@@ -57,16 +49,13 @@ class WorkoutPage {
 
     viewBuilder;
     repsCounter;
-    intervalMs;
 
     prepareWorkoutPage = new PrepareWorkoutPage();
 
     endWorkoutHidden = true;
 
-    init(intervalMs) {
+    init() {
         this.viewBuilder = new TemplateBuilder();
-
-        this.intervalMs = intervalMs;
 
         this.viewBuilder.displayWorkoutPage();
 
@@ -74,7 +63,7 @@ class WorkoutPage {
 
         this.initEventListeners();
 
-        this.repsCounter = new RepsCounter(this.intervalMs);
+        this.repsCounter = new RepsCounter();
 
         this.repsCounter.startCounter();
     }
@@ -109,15 +98,9 @@ class WorkoutPage {
         this.endWorkoutBtn.addEventListener("click", this.destroy.bind(this));
         this.pauseBtn.addEventListener("click", this.pauseToggle.bind(this));
     }
-
-    getIntervalMs() {
-        return this.intervalMs;
-    }
 }
 
 class PrepareWorkoutPage {
-
-    DEFAULT_PREPARE_TIME_MS = 5000;
 
     init() {
         this.viewBuilder = new TemplateBuilder();
@@ -127,11 +110,11 @@ class PrepareWorkoutPage {
 
         this.stopwatch = new StopwatchView(new Stopwatch());
         this.stopwatch.startTimer();
-        setTimeout(() => mainApp.initWorkoutPage(), this.DEFAULT_PREPARE_TIME_MS);
+        setTimeout(() => mainApp.initWorkoutPage(), prepareRange.getValue() * 1000);
     }
 
     displayPrepareTime() {
-        document.querySelector("#prepareTime").textContent = `/00:00:${Utils.transformTimeForView(this.DEFAULT_PREPARE_TIME_MS / 1000)}`
+        document.querySelector("#prepareTime").textContent = `/00:00:${Utils.transformTimeForView(prepareRange.getValue())}`
     }
 }
 
@@ -152,21 +135,16 @@ class Counter {
 }
 
 class RepsCounter {
-    intervalMs;
     intervalId;
 
     stopwatch = new StopwatchView(globalStopwatch);
     repsElem = document.querySelector("#reps");
 
-    constructor(intervalMs) {
-        this.intervalMs = intervalMs;
-    }
-
     startCounter() {
         this.updateUI();
         this.stopwatch.startTimer();
         this.doRep();
-        this.intervalId = setInterval(this.doRep.bind(this), this.intervalMs);
+        this.intervalId = setInterval(this.doRep.bind(this), intervalRange.getValue() * 1000);
     }
 
     doRep() {
@@ -294,6 +272,44 @@ class TemplateBuilder {
         utter.rate = 4;
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utter);
+    }
+}
+
+class Range {
+    rangeInput;
+    rangeValueElem;
+    rangeValue;
+
+    initRange() {
+        this.updateValue();
+        this.rangeInput.oninput = this.updateValue.bind(this);
+    }
+
+    updateValue() {
+        this.rangeValue = +this.rangeInput.value;
+        this.rangeValueElem.textContent = this.rangeInput.value;
+    }
+
+    getValue() {
+        return this.rangeValue;
+    }
+}
+
+class IntervalRange extends Range {
+    constructor() {
+        super();
+        this.rangeInput = document.querySelector("#intevalId");
+        this.rangeValueElem = document.querySelector("#intervalValue");
+        this.initRange();
+    }
+}
+
+class PrepareTimeRange extends Range {
+    constructor() {
+        super();
+        this.rangeInput = document.querySelector("#prepareTime");
+        this.rangeValueElem = document.querySelector("#prepareTimeValue");
+        this.initRange();
     }
 }
 
